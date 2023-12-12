@@ -2,12 +2,11 @@
 #include "task.h"
 #include "icm42605.h"
 
-#ifdef ICM42605_USE_HARD_SPI
-extern SPI_HandleTypeDef hspi2;
-#endif
-
 float accel_sensitivity = 0.244f;  //加速度的最小分辨率 mg/LSB
 float gyro_sensitivity = 32.8f;  //陀螺仪的最小分辨率
+
+#if defined ICM42605_USE_HARD_SPI
+extern SPI_HandleTypeDef hspi2;
 
 inline void icm_cs_low() {
     HAL_GPIO_WritePin(ICM_PORT_CS, ICM_PIN_CS, GPIO_PIN_RESET);
@@ -29,36 +28,55 @@ void icm_swap_data(uint8_t* buf, uint8_t len) {
         buf++;
     }
 }
+#elif defined ICM42605_USE_HARD_I2C
+extern I2C_HandleTypeDef hi2c1;
+#endif
 
 uint8_t icm_read_reg(uint8_t reg) {
     uint8_t reg_val = 0;
 
+#if defined ICM42605_USE_HARD_SPI
     uint8_t first_bit = reg | 0x80; // 读寄存器时，第一个字节第一位为1
 
     icm_cs_low();
     icm_swap_data(&first_bit, 1);
     icm_swap_data(&reg_val, 1);
     icm_cs_high();
+#elif defined ICM42605_USE_HARD_I2C
+    uint8_t ret = HAL_I2C_Mem_Read(&hi2c1, ICM_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, &reg_val, 1, 1000);
+    if (ret != HAL_OK) {
+        extern UART_HandleTypeDef huart1;
+        HAL_UART_Transmit(&huart1, "read error\n", 11, 1000);
+    }
+#endif
 
     return reg_val;
 }
 
 void icm_read_regs(uint8_t reg, uint8_t* buf, uint16_t len) {
+#if defined ICM42605_USE_HARD_SPI
     uint8_t first_bit = reg | 0x80;
 
     icm_cs_low();
     icm_swap_data(&first_bit, 1);
     icm_swap_data(buf, len);
     icm_cs_high();
+#elif defined ICM42605_USE_HARD_I2C
+    HAL_I2C_Mem_Read(&hi2c1, ICM_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, buf, len, 100);
+#endif
 }
 
 void icm_write_reg(uint8_t reg, uint8_t data) {
+#if defined ICM42605_USE_HARD_SPI
     uint8_t first_bit = reg & 0x7f; // 写寄存器时，第一个字节第一位为0
 
     icm_cs_low();
     icm_swap_data(&first_bit, 1);
     icm_swap_data(&data, 1);
     icm_cs_high();
+#elif defined ICM42605_USE_HARD_I2C
+    HAL_I2C_Mem_Write(&hi2c1, ICM_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, 10);
+#endif
 }
 
 float icm_set_ares(uint8_t scale) {
@@ -117,19 +135,21 @@ int8_t icm_init(void) {
     uint8_t reg_val = 0;
     reg_val = icm_read_reg(ICM_WHO_AM_I);
 
+    if (reg_val != ICM42605_ID)
+        return -1;
+
     icm_write_reg(ICM_REG_BANK_SEL, 0); //设置bank 0区域寄存器
     icm_write_reg(ICM_REG_BANK_SEL, 0x01); //软复位传感器
     vTaskDelay(100);
 
-    if (reg_val != ICM42605_ID)
-        return -1;
-
     icm_write_reg(ICM_REG_BANK_SEL, 1); //设置bank 1区域寄存器
+#if defined ICM42605_USE_HARD_SPI
     icm_write_reg(ICM_INTF_CONFIG4, 0x02); //设置为4线SPI通信
-
+#elif defined ICM42605_USE_HARD_I2C
+    icm_write_reg(ICM_INTF_CONFIG4, 0x00);
+#endif
     icm_write_reg(ICM_REG_BANK_SEL, 0); //设置bank 0区域寄存器
     icm_write_reg(ICM_FIFO_CONFIG, 0x40); //Stream-to-FIFO Mode(page61)
-
 
     reg_val = icm_read_reg(ICM_INT_SOURCE0);
     icm_write_reg(ICM_INT_SOURCE0, 0x00);

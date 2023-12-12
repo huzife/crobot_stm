@@ -90,10 +90,10 @@ void comunication_task(void* pvParameters) {
     HAL_UART_Receive_DMA(&huart1, (uint8_t*)com_rx_data, COM_DATA_RX_SIZE);
 //    com_tx_done = 1;
     taskEXIT_CRITICAL();
-    
+
     for (;;) {
         task_delay(1);
-        
+
         // 接收并解析数据帧
         while (!parser.flag) {
             uint8_t data;
@@ -101,7 +101,7 @@ void comunication_task(void* pvParameters) {
                 parse(&parser, data);
             }
         }
-        
+
         // 处理数据
         parser.flag = 0;
         process_data((uint8_t*)parser.buf);
@@ -117,4 +117,3 @@ void imu_task(void* pvParameters) {
 }
 
 /* USER CODE END Application */
-

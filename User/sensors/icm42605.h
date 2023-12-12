@@ -3,15 +3,9 @@
 
 #include "main.h"
 
-#if defined ICM42605_USE_HARD_SPI
-
+#ifdef ICM42605_USE_HARD_SPI
 #define ICM_PORT_CS GPIOB
 #define ICM_PIN_CS GPIO_PIN_11
-
-#elif defined ICM42605_USE_HARD_I2C
-
-#define ICM_
-
 #endif
 
 // registers

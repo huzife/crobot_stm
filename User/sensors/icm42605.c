@@ -2,7 +2,9 @@
 #include "task.h"
 #include "icm42605.h"
 
+#ifdef ICM42605_USE_HARD_SPI
 extern SPI_HandleTypeDef hspi2;
+#endif
 
 float accel_sensitivity = 0.244f;  //加速度的最小分辨率 mg/LSB
 float gyro_sensitivity = 32.8f;  //陀螺仪的最小分辨率
@@ -30,20 +32,20 @@ void icm_swap_data(uint8_t* buf, uint8_t len) {
 
 uint8_t icm_read_reg(uint8_t reg) {
     uint8_t reg_val = 0;
-    
+
     uint8_t first_bit = reg | 0x80; // 读寄存器时，第一个字节第一位为1
-    
+
     icm_cs_low();
     icm_swap_data(&first_bit, 1);
     icm_swap_data(&reg_val, 1);
     icm_cs_high();
-    
+
     return reg_val;
 }
 
 void icm_read_regs(uint8_t reg, uint8_t* buf, uint16_t len) {
     uint8_t first_bit = reg | 0x80;
-    
+
     icm_cs_low();
     icm_swap_data(&first_bit, 1);
     icm_swap_data(buf, len);
@@ -52,7 +54,7 @@ void icm_read_regs(uint8_t reg, uint8_t* buf, uint16_t len) {
 
 void icm_write_reg(uint8_t reg, uint8_t data) {
     uint8_t first_bit = reg & 0x7f; // 写寄存器时，第一个字节第一位为0
-    
+
     icm_cs_low();
     icm_swap_data(&first_bit, 1);
     icm_swap_data(&data, 1);
@@ -114,14 +116,14 @@ float icm_set_gres(uint8_t scale) {
 int8_t icm_init(void) {
     uint8_t reg_val = 0;
     reg_val = icm_read_reg(ICM_WHO_AM_I);
-    
+
     icm_write_reg(ICM_REG_BANK_SEL, 0); //设置bank 0区域寄存器
     icm_write_reg(ICM_REG_BANK_SEL, 0x01); //软复位传感器
     vTaskDelay(100);
-    
+
     if (reg_val != ICM42605_ID)
         return -1;
-    
+
     icm_write_reg(ICM_REG_BANK_SEL, 1); //设置bank 1区域寄存器
     icm_write_reg(ICM_INTF_CONFIG4, 0x02); //设置为4线SPI通信
 
@@ -172,7 +174,7 @@ int8_t icm_init(void) {
 float icm_get_temperature() {
     uint8_t buf[2] = {0};
     icm_read_regs(ICM_TEMP_DATA1, buf, 2);
-    
+
     return (int16_t)((buf[0] << 8) | buf[1]) / 132.48 + 25;
 }
 

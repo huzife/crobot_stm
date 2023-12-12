@@ -3,8 +3,8 @@
  * Auto generated Run-Time-Environment Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'imu'
- * Target:  'imu'
+ * Project: 'crobot_stm' 
+ * Target:  'crobot_stm' 
  */
 
 #ifndef RTE_COMPONENTS_H
@@ -12,7 +12,7 @@
 
 
 /*
- * Define the Device Header File:
+ * Define the Device Header File: 
  */
 #define CMSIS_device_header "stm32f4xx.h"
 

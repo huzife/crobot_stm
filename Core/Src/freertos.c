@@ -51,6 +51,7 @@
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void task_delay(uint16_t ms);
+void task_soft_delay_us(uint64_t us);
 void start_freertos(void);
 void default_task(void* pvParameters);
 void comunication_task(void* pvParameters);
@@ -70,8 +71,34 @@ void task_delay(uint16_t ms) {
         vTaskDelay(ticks);
 }
 
+void task_soft_delay_us(uint64_t us) {
+    while (us--) {
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+    }
+}
+
 void start_freertos() {
-//    xTaskCreate(default_task, "default_task", 128, NULL, 0, NULL);
+    // xTaskCreate(default_task, "default_task", 128, NULL, 0, NULL);
     xTaskCreate(comunication_task, "comunication_task", 128, NULL, 2, NULL);
     xTaskCreate(imu_task, "imu_task", 128, NULL, 2, NULL);
     vTaskStartScheduler();
@@ -103,7 +130,10 @@ void comunication_task(void* pvParameters) {
         }
 
         // 处理数据
-        while (com_tx_done == 0) {}
+        uint16_t us = 5000;
+        while (com_tx_done == 0 && us--) {
+            task_soft_delay_us(1);
+        }
         com_tx_done = 0;
         parser.flag = 0;
         process_data((uint8_t*)parser.buf);

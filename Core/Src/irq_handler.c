@@ -15,9 +15,9 @@
  *  入口参数：None
  *  返 回 值：None
  */
-//void dma2_stream7_Handler() {
-//    com_tx_done = 1;
-//}
+void dma2_stream7_Handler() {
+    com_tx_done = 1;
+}
 
 /**
  *  函数功能：uart1空闲中断回调函数
@@ -27,9 +27,9 @@
 void uart1_irq_handler() {
     if (RESET != __HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) {
         __HAL_UART_CLEAR_IDLEFLAG(&huart1);
-        
+
         HAL_UART_DMAStop(&huart1);
-        
+
         // 读取CNDTR寄存器的值，计算接收到的数据长度
         com_rx_len = COM_DATA_RX_SIZE - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
 
@@ -41,7 +41,7 @@ void uart1_irq_handler() {
             }
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
-        
+
         HAL_UART_Receive_DMA(&huart1, (uint8_t*)com_rx_data, COM_DATA_RX_SIZE);
     }
 }

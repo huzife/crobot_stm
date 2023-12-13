@@ -216,8 +216,8 @@ void DMA2_Stream7_IRQHandler(void)
   /* USER CODE END DMA2_Stream7_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart1_tx);
   /* USER CODE BEGIN DMA2_Stream7_IRQn 1 */
-//  extern void dma2_stream7_Handler();
-//  dma2_stream7_Handler();
+  extern void dma2_stream7_Handler();
+  dma2_stream7_Handler();
   /* USER CODE END DMA2_Stream7_IRQn 1 */
 }
 

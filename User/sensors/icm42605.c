@@ -43,13 +43,8 @@ uint8_t icm_read_reg(uint8_t reg) {
     icm_swap_data(&reg_val, 1);
     icm_cs_high();
 #elif defined ICM42605_USE_HARD_I2C
-    uint8_t ret = HAL_I2C_Mem_Read(&hi2c1, ICM_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, &reg_val, 1, 1000);
-    if (ret != HAL_OK) {
-        extern UART_HandleTypeDef huart1;
-        HAL_UART_Transmit(&huart1, "read error\n", 11, 1000);
-    }
+    HAL_I2C_Mem_Read(&hi2c1, ICM_ADDRESS << 1, reg, I2C_MEMADD_SIZE_8BIT, &reg_val, 1, 1000);
 #endif
-
     return reg_val;
 }
 

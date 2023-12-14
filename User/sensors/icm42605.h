@@ -128,7 +128,7 @@
 #define ICM_OFFSET_USER7              0x7E
 #define ICM_OFFSET_USER8              0x7F
 
-#define ICM_ADDRESS                   0x69   // Address of ICM42605 accel/gyro when ADO = HIGH
+#define ICM_ADDRESS                   0x68   // Address of ICM42605 accel/gyro when ADO = LOW
 
 #define AFS_2G  0x03
 #define AFS_4G  0x02

@@ -2,24 +2,6 @@
 #include <string.h>
 
 /**
- *  函数功能：DMA2通道2传输完成回调函数
- *  入口参数：None
- *  返 回 值：None
- */
-//void dma2_stream2_Handler() {
-//    com_rx_done = 1;
-//}
-
-/**
- *  函数功能：DMA2通道7传输完成回调函数
- *  入口参数：None
- *  返 回 值：None
- */
-void dma2_stream7_Handler() {
-    com_tx_done = 1;
-}
-
-/**
  *  函数功能：uart1空闲中断回调函数
  *  入口参数：None
  *  返 回 值：None

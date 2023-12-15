@@ -13,7 +13,7 @@ uint8_t check_sum(uint8_t* data, uint32_t len) {
     for (int i = 0; i < len; i++) {
         sum += data[i];
     }
-    
+
     return ~sum;
 }
 
@@ -26,7 +26,7 @@ void data_parser_init(Data_Parser *parser, uint16_t b_len) {
     parser->flag = 0;   // 解析完成标志位置零
     parser->FE = 0;     // 帧头FE标志位置零
     parser->FH = 0;     // 完整帧头标志位置零
-    
+
     parser->buf_len = b_len;    // 缓冲区长度
     parser->buf = (uint8_t *)pvPortMalloc(sizeof(uint8_t) * b_len); // 分配缓冲区内存
     parser->data_len = 0;   // 当前数据长度置零
@@ -42,7 +42,7 @@ void parse(Data_Parser *parser, uint8_t data) {
     if (!parser->flag) {
         // 存入当前数据
         parser->buf[parser->data_len] = data;
-        
+
         switch(data) {
             case 0xFE: {
                 parser->FE = 1;
@@ -65,21 +65,21 @@ void parse(Data_Parser *parser, uint8_t data) {
             }
         }
     }
-    
+
     // 判断是否接收到完整的一帧数据
     if (parser->FH && (parser->data_len > parser->buf[2] + 2)) {
         // 累加法计算校验和
         uint8_t sum = check_sum((uint8_t*)parser->buf, parser->buf[2] + 4);
-        
+
         // 调整标志位
         parser->FE = 0;
         parser->FH = 0;
         parser->data_len = 0;
-        
+
         // 校验和为0时校验成功
         if (!sum) parser->flag = 1;
     }
-    
+
     parser->data_len++;
     if (parser->data_len >= parser->buf_len) parser->data_len = 0;
 }
@@ -94,24 +94,24 @@ void process_data(uint8_t *buf) {
     code = (Function_Code)buf[3];
     switch (code) {
         case NONE: break;
-        
+
         case GET_SPEED: break;
-        
+
         case SET_SPEED: break;
-        
+
         case GET_IMU_TEMPERATURE: {
             FloatHexUnion fh;
             fh.float_value = icm_get_temperature();
             for (int i = 0; i < 4; i++) {
                 com_tx_data[4 + i] = fh.hex[3 - i];
             }
-            
+
             com_tx_data[0] = 0xFE;
             com_tx_data[1] = 0xEF;
             com_tx_data[2] = 0x05;
             com_tx_data[3] = 0x03;
             com_tx_data[8] = check_sum((uint8_t*)com_tx_data, 8);
-            
+
             HAL_UART_Transmit_DMA(&huart1, (uint8_t*)com_tx_data, 9);
             break;
         }
@@ -122,27 +122,27 @@ void process_data(uint8_t *buf) {
             for (int i = 0; i < 4; i++) {
                 com_tx_data[4 + i] = fh.hex[3 - i];
             }
-            
+
             fh.float_value = icm_raw_data.accel_y;
             for (int i = 0; i < 4; i++) {
                 com_tx_data[8 + i] = fh.hex[3 - i];
             }
-            
+
             fh.float_value = icm_raw_data.accel_z;
             for (int i = 0; i < 4; i++) {
                 com_tx_data[12 + i] = fh.hex[3 - i];
             }
-            
+
             fh.float_value = icm_raw_data.angular_x;
             for (int i = 0; i < 4; i++) {
                 com_tx_data[16 + i] = fh.hex[3 - i];
             }
-            
+
             fh.float_value = icm_raw_data.angular_y;
             for (int i = 0; i < 4; i++) {
                 com_tx_data[20 + i] = fh.hex[3 - i];
             }
-            
+
             fh.float_value = icm_raw_data.angular_z;
             for (int i = 0; i < 4; i++) {
                 com_tx_data[24 + i] = fh.hex[3 - i];
@@ -153,7 +153,7 @@ void process_data(uint8_t *buf) {
             com_tx_data[2] = 0x19;
             com_tx_data[3] = 0x04;
             com_tx_data[28] = check_sum((uint8_t*)com_tx_data, 28);
-            
+
             HAL_UART_Transmit_DMA(&huart1, (uint8_t*)com_tx_data, 29);
             break;
         }

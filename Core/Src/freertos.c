@@ -51,9 +51,7 @@
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 void task_delay(uint16_t ms);
-void task_soft_delay_us(uint64_t us);
 void start_freertos(void);
-void default_task(void* pvParameters);
 void comunication_task(void* pvParameters);
 void imu_task(void* pvParameters);
 /* USER CODE END FunctionPrototypes */
@@ -71,43 +69,10 @@ void task_delay(uint16_t ms) {
         vTaskDelay(ticks);
 }
 
-void task_soft_delay_us(uint64_t us) {
-    while (us--) {
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-        __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
-    }
-}
-
 void start_freertos() {
-    // xTaskCreate(default_task, "default_task", 128, NULL, 0, NULL);
     xTaskCreate(comunication_task, "comunication_task", 128, NULL, 2, NULL);
     xTaskCreate(imu_task, "imu_task", 128, NULL, 2, NULL);
     vTaskStartScheduler();
-}
-
-void default_task(void* pvParameters) {
-    for (;;) {
-        task_delay(1);
-    }
 }
 
 void comunication_task(void* pvParameters) {
@@ -115,7 +80,6 @@ void comunication_task(void* pvParameters) {
     message_queue = xQueueCreate(100, sizeof(uint8_t));
     data_parser_init(&parser, 64);
     HAL_UART_Receive_DMA(&huart1, (uint8_t*)com_rx_data, COM_DATA_RX_SIZE);
-    com_tx_done = 1;
     taskEXIT_CRITICAL();
 
     for (;;) {
@@ -130,11 +94,8 @@ void comunication_task(void* pvParameters) {
         }
 
         // 处理数据
-        uint16_t us = 5000;
-        while (com_tx_done == 0 && us--) {
-            task_soft_delay_us(1);
-        }
-        com_tx_done = 0;
+        while (hdma_usart1_tx.State != HAL_DMA_STATE_READY) {}
+
         parser.flag = 0;
         process_data((uint8_t*)parser.buf);
     }

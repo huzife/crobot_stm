@@ -55,6 +55,7 @@ void task_delay(uint16_t ms);
 void start_freertos(void);
 void comunication_task(void* pvParameters);
 void imu_task(void* pvParameters);
+void gpio_test_task(void* pvParameters);
 /* USER CODE END FunctionPrototypes */
 
 /* Private application code --------------------------------------------------*/
@@ -73,6 +74,7 @@ void task_delay(uint16_t ms) {
 void start_freertos() {
     xTaskCreate(comunication_task, "comunication_task", 128, NULL, 2, NULL);
     xTaskCreate(imu_task, "imu_task", 128, NULL, 2, NULL);
+    xTaskCreate(gpio_test_task, "gpio_test_task", 128, NULL, 2, NULL);
     vTaskStartScheduler();
 }
 
@@ -106,6 +108,22 @@ void imu_task(void* pvParameters) {
     icm_init();
     for (;;) {
         icm_get_raw_data(&icm_raw_data);
+        task_delay(10);
+    }
+}
+
+void gpio_test_task(void* pvParameters) {
+    for (;;) {
+        uint8_t cnt = 0;
+        if (!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3))
+            ++cnt;
+        if (!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4))
+            ++cnt;
+        if (!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5))
+            ++cnt;
+
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, !(cnt % 2));
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, cnt < 2);
         task_delay(10);
     }
 }

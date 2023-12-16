@@ -89,9 +89,8 @@ void parse(Data_Parser *parser, uint8_t data) {
  *  入口参数：数据帧首地址
  *  返 回 值：None
  */
-Function_Code code;
 void process_data(uint8_t *buf) {
-    code = (Function_Code)buf[3];
+    Function_Code code = (Function_Code)buf[3];
     switch (code) {
         case NONE: break;
 

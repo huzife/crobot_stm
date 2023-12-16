@@ -80,7 +80,7 @@ void comunication_task(void* pvParameters) {
     taskENTER_CRITICAL();
     message_queue = xQueueCreate(100, sizeof(uint8_t));
     data_parser_init(&parser, 64);
-    HAL_UART_Receive_DMA(&huart1, (uint8_t*)com_rx_data, COM_DATA_RX_SIZE);
+    HAL_UART_Receive_IT(&huart1, &com_rx_data, 1);
     taskEXIT_CRITICAL();
 
     for (;;) {

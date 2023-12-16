@@ -400,11 +400,6 @@
               <FilePath>..\Core\Src\share_ware.c</FilePath>
             </File>
             <File>
-              <FileName>irq_handler.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\irq_handler.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>

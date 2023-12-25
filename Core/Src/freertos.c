@@ -97,7 +97,7 @@ void comunication_task(void* pvParameters) {
         }
 
         // 处理数据
-        while (hdma_usart1_tx.State != HAL_DMA_STATE_READY) {}
+        while (huart1.gState != HAL_UART_STATE_READY);
 
         parser.flag = 0;
         process_data((uint8_t*)parser.buf);

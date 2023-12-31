@@ -1,7 +1,5 @@
 #include "data_com.h"
 #include "share_ware.h"
-#include "FreeRTOS.h"
-#include "queue.h"
 
 /**
  *  函数功能：计算累加校验和

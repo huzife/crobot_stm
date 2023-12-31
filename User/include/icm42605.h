@@ -1,7 +1,7 @@
 #ifndef SENSORS_ICM42605_H
 #define SENSORS_ICM42605_H
 
-#include "main.h"
+#include "stm32f4xx_hal.h"
 
 #ifdef ICM42605_USE_HARD_SPI
 #define ICM_PORT_CS GPIOB
@@ -172,12 +172,12 @@
 #define ICM42605_ID  0x42
 
 typedef struct {
-    __IO float accel_x;
-    __IO float accel_y;
-    __IO float accel_z;
-    __IO float angular_x;
-    __IO float angular_y;
-    __IO float angular_z;
+    float accel_x;
+    float accel_y;
+    float accel_z;
+    float angular_x;
+    float angular_y;
+    float angular_z;
 } ICM_Raw_Data;
 
 int8_t icm_init(void);
